@@ -1,0 +1,73 @@
+@import '../../styles/vars.scss';
+
+.container {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: color('off-white');
+  border-radius: 12px;
+  border: 2px solid color('light-gray');
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: color('text-primary');
+  margin-bottom: 1rem;
+}
+
+.stars {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+
+  .star {
+    font-size: 2rem;
+    cursor: pointer;
+    color: color('light-gray');
+    transition: color 0.1s;
+
+    &:hover,
+    &:hover ~ .star {
+      color: #f5a623;
+    }
+  }
+
+  .starSelected {
+    color: #f5a623;
+  }
+}
+
+.submitButton {
+  padding: 0.75rem 1.5rem;
+  background: color('primary');
+  color: color('white');
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):hover {
+    opacity: 0.85;
+  }
+}
+
+.error {
+  color: color('primary');
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+}
+
+.success {
+  color: #22c55e;
+  font-size: 1rem;
+  font-weight: 600;
+}

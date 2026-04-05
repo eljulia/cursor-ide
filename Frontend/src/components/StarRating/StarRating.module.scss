@@ -1,0 +1,39 @@
+@import '../../styles/vars.scss';
+
+.container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stars {
+  display: flex;
+  gap: 0.125rem;
+}
+
+.starFilled {
+  color: #f5a623;
+  font-size: 1.25rem;
+}
+
+.starEmpty {
+  color: color('light-gray');
+  font-size: 1.25rem;
+}
+
+.score {
+  font-size: 1rem;
+  font-weight: 700;
+  color: color('text-primary');
+}
+
+.count {
+  font-size: 0.875rem;
+  color: color('text-secondary');
+}
+
+.noRating {
+  font-size: 0.875rem;
+  color: color('text-secondary');
+  font-style: italic;
+}

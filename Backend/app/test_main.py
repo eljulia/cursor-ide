@@ -43,8 +43,15 @@ MOCK_COURSE_DETAIL = {
             "description": "Aprende a crear componentes",
             "slug": "componentes-en-react"
         }
-    ]
+    ],
+    "average_rating": 4.5,
+    "rating_count": 10,
 }
+
+MOCK_RATINGS_LIST = [
+    {"id": 1, "course_id": 1, "rating": 5},
+    {"id": 2, "course_id": 1, "rating": 4},
+]
 
 
 @pytest.fixture
@@ -244,7 +251,7 @@ class TestContractCompliance:
         data = response.json()
         
         # Verify main course fields
-        expected_course_fields = {"id", "name", "description", "thumbnail", "slug", "teacher_id", "classes"}
+        expected_course_fields = {"id", "name", "description", "thumbnail", "slug", "teacher_id", "classes", "average_rating", "rating_count"}
         actual_course_fields = set(data.keys())
         assert actual_course_fields == expected_course_fields
         
@@ -276,4 +283,63 @@ class TestContractCompliance:
         assert course["name"] == "Curso de React"
         assert course["description"] == "Curso de React"
         assert course["thumbnail"] == "https://via.placeholder.com/150"
-        assert course["slug"] == "curso-de-react" 
+        assert course["slug"] == "curso-de-react"
+
+
+class TestRatingsEndpoints:
+    """Tests for rating-related endpoints"""
+
+    def test_create_rating_valid(self, client, mock_course_service):
+        """Test POST /courses/{slug}/ratings with a valid rating"""
+        mock_course_service.get_course_by_slug.return_value = MOCK_COURSE_DETAIL
+        mock_course_service.create_rating.return_value = {"id": 1, "course_id": 1, "rating": 4}
+
+        response = client.post("/courses/curso-de-react/ratings", json={"rating": 4})
+        assert response.status_code == 201
+
+        data = response.json()
+        assert "id" in data
+        assert "course_id" in data
+        assert "rating" in data
+        assert isinstance(data["rating"], int)
+
+    def test_create_rating_invalid_range(self, client, mock_course_service):
+        """Test POST /courses/{slug}/ratings with rating out of range returns 422"""
+        response = client.post("/courses/curso-de-react/ratings", json={"rating": 6})
+        assert response.status_code == 422
+
+    def test_create_rating_course_not_found(self, client, mock_course_service):
+        """Test POST /courses/{slug}/ratings when course doesn't exist returns 404"""
+        mock_course_service.get_course_by_slug.return_value = None
+
+        response = client.post("/courses/nonexistent/ratings", json={"rating": 3})
+        assert response.status_code == 404
+        assert response.json() == {"detail": "Course not found"}
+
+    def test_get_course_ratings(self, client, mock_course_service):
+        """Test GET /courses/{slug}/ratings returns list of ratings"""
+        mock_course_service.get_course_by_slug.return_value = MOCK_COURSE_DETAIL
+        mock_course_service.get_ratings_by_course.return_value = MOCK_RATINGS_LIST
+
+        response = client.get("/courses/curso-de-react/ratings")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert isinstance(data, list)
+        for item in data:
+            assert "id" in item
+            assert "course_id" in item
+            assert "rating" in item
+
+    def test_get_course_detail_includes_rating_summary(self, client, mock_course_service):
+        """Test GET /courses/{slug} includes average_rating and rating_count"""
+        mock_course_service.get_course_by_slug.return_value = MOCK_COURSE_DETAIL
+
+        response = client.get("/courses/curso-de-react")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert "average_rating" in data
+        assert "rating_count" in data
+        assert isinstance(data["rating_count"], int)
+        assert data["average_rating"] is None or isinstance(data["average_rating"], float)

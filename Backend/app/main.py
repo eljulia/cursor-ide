@@ -1,9 +1,14 @@
 from fastapi import FastAPI, HTTPException, Depends
+from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.db.base import engine, get_db
 from app.services.course_service import CourseService
+
+
+class RatingCreate(BaseModel):
+    rating: int = Field(ge=1, le=5)
 
 app = FastAPI(title=settings.project_name, version=settings.version)
 
@@ -70,8 +75,31 @@ def get_course_by_slug(slug: str, course_service: CourseService = Depends(get_co
     Returns course information including teachers and classes.
     """
     course = course_service.get_course_by_slug(slug)
-    
+
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
-    
+
     return course
+
+
+@app.post("/courses/{slug}/ratings", status_code=201)
+async def create_course_rating(
+    slug: str,
+    body: RatingCreate,
+    course_service: CourseService = Depends(get_course_service),
+) -> dict:
+    course = course_service.get_course_by_slug(slug)
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+    return course_service.create_rating(course["id"], body.rating)
+
+
+@app.get("/courses/{slug}/ratings")
+async def get_course_ratings(
+    slug: str,
+    course_service: CourseService = Depends(get_course_service),
+) -> list:
+    course = course_service.get_course_by_slug(slug)
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+    return course_service.get_ratings_by_course(course["id"])

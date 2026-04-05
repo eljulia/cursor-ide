@@ -22,6 +22,16 @@ export interface Class {
 export interface CourseDetail extends Course {
   description: string;
   classes: Class[];
+  average_rating: number | null;
+  rating_count: number;
+}
+
+// Rating types
+export interface Rating {
+  id: number;
+  course_id: number;
+  rating: number;
+  created_at: string;
 }
 
 // Progress types
